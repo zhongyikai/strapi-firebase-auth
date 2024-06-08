@@ -189,7 +189,7 @@ export default ({ strapi }: Params) => ({
 			userPayload.email = profileMetaData?.email || (await createFakeEmail());
 		}
 
-		const randomSuffix = crypto.randomBytes(3).toString('hex');
+		const randomSuffix = crypto.randomBytes(2).toString('hex');
 		userPayload.username = `${userPayload.username}_${randomSuffix}`;
 
 		return strapi
