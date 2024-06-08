@@ -4,6 +4,7 @@ const { ValidationError } = utils.errors;
 import { processMeData } from "../utils/fetch-me";
 import { generateReferralCode } from "../utils";
 import { promiseHandler } from "../utils/promiseHandler";
+import crypto from 'crypto';
 
 interface Params {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -187,6 +188,9 @@ export default ({ strapi }: Params) => ({
 			userPayload.username = userPayload.phoneNumber;
 			userPayload.email = profileMetaData?.email || (await createFakeEmail());
 		}
+
+		const randomSuffix = crypto.randomBytes(3).toString('hex');
+		userPayload.username = `${userPayload.username}_${randomSuffix}`;
 
 		return strapi
 			.query("plugin::users-permissions.user")
