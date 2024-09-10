@@ -90,7 +90,7 @@ export default ({ strapi }: Params) => ({
 			userModel.hasOwnProperty("firebaseUserID") &&
 			(decodedToken.user_id || decodedToken.uid)
 		) {
-			const firebaseUserID = decodedToken.user_id || decodedToken.uid;
+			const firebaseUserID = decodedToken.uid || decodedToken.user_id;
 			dbUser = await strapi.db.query("plugin::users-permissions.user").findOne({
 				where: {
 					firebaseUserID,
@@ -101,28 +101,28 @@ export default ({ strapi }: Params) => ({
 			}
 		}
 
-		query.$or = [];
+		// query.$or = [];
 
-		// Check if email is available and construct query
-		if (decodedToken.email) {
-			query.$or.push({ email: decodedToken.email });
-			// Extend the query with appleEmail if that attribute exists in the userModel
-			if (userModel.hasOwnProperty("appleEmail")) {
-				query.$or.push({ appleEmail: decodedToken.email });
-			}
-		}
+		// // Check if email is available and construct query
+		// if (decodedToken.email) {
+		// 	query.$or.push({ email: decodedToken.email });
+		// 	// Extend the query with appleEmail if that attribute exists in the userModel
+		// 	if (userModel.hasOwnProperty("appleEmail")) {
+		// 		query.$or.push({ appleEmail: decodedToken.email });
+		// 	}
+		// }
 
-		// Add phone number to query if available
-		if (decodedToken.phone_number) {
-			query.$or.push({ phoneNumber: decodedToken.phone_number });
-		}
+		// // Add phone number to query if available
+		// if (decodedToken.phone_number) {
+		// 	query.$or.push({ phoneNumber: decodedToken.phone_number });
+		// }
 
-		if (query.$or.length != 0) {
-			// Execute a single database query with constructed conditions
-			dbUser = await strapi.db.query("plugin::users-permissions.user").findOne({
-				where: query,
-			});
-		}
+		// if (query.$or.length != 0) {
+		// 	// Execute a single database query with constructed conditions
+		// 	dbUser = await strapi.db.query("plugin::users-permissions.user").findOne({
+		// 		where: query,
+		// 	});
+		// }
 
 		// Return user or null if not found
 		return dbUser;
@@ -189,6 +189,11 @@ export default ({ strapi }: Params) => ({
 		} else {
 			userPayload.username = userPayload.phoneNumber;
 			userPayload.email = profileMetaData?.email || (await createFakeEmail());
+		}
+
+		if (!userPayload.username) {
+			const randomSuffix = crypto.randomBytes(6).toString('hex');
+			userPayload.username = randomSuffix;
 		}
 
 		const randomSuffix = crypto.randomBytes(2).toString('hex');
