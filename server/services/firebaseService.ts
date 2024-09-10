@@ -117,10 +117,12 @@ export default ({ strapi }: Params) => ({
 			query.$or.push({ phoneNumber: decodedToken.phone_number });
 		}
 
-		// Execute a single database query with constructed conditions
-		dbUser = await strapi.db.query("plugin::users-permissions.user").findOne({
-			where: query,
-		});
+		if (query.$or.length != 0) {
+			// Execute a single database query with constructed conditions
+			dbUser = await strapi.db.query("plugin::users-permissions.user").findOne({
+				where: query,
+			});
+		}
 
 		// Return user or null if not found
 		return dbUser;
